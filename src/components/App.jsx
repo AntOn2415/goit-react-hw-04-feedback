@@ -1,50 +1,41 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 import Statistics from './Statistics';
 import FeedbackOptions from './FeedbackOptions';
 import Section from './Section';
 import Notification from './Notification';
 import PropTypes from 'prop-types';
 
-export class App extends Component {
-  static propTypes = {
-    good: PropTypes.number,
-    neutral: PropTypes.number,
-    bad: PropTypes.number,
-    handleFeedback: PropTypes.func,
+export function App () {
+const [good, setGood] = useState(0);
+const [neutral, setNeutral] = useState(0);
+const [bad, setBad] = useState(0);
+
+const handleFeedback = option => {
+  const feedbackMap = {
+    good: setGood,
+    neutral: setNeutral,
+    bad: setBad
   };
 
-  state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
-  };
+  if (option in feedbackMap) {
+    feedbackMap[option](prevState => prevState + 1);
+  }
+};
 
-  handleFeedback = option => {
-    this.setState(prevState => ({
-      [option]: prevState[option] + 1,
-    }));
-  };
-
-  calculateTotalFeedback = () => {
-    const { good, neutral, bad } = this.state;
+  const calculateTotalFeedback = () => {
     return good + neutral + bad;
   };
 
-  calculatePositivePercentage = () => {
-    const { good } = this.state;
-    const totalFeedback = this.calculateTotalFeedback();
+  const totalFeedback = calculateTotalFeedback();
+
+  const calculatePositivePercentage = () => {
     return totalFeedback > 0 ? Math.round((good / totalFeedback) * 100) : 0;
   };
-
-  render() {
-    const { good, neutral, bad } = this.state;
-    const totalFeedback = this.calculateTotalFeedback();
-    const positivePercentage = this.calculatePositivePercentage();
 
     return (
       <div className="container">
         <Section title="Please leave feedback">
-          <FeedbackOptions options={['good', 'neutral', 'bad' ]} onLeaveFeedback={this.handleFeedback} />
+          <FeedbackOptions options={['good', 'neutral', 'bad' ]} onLeaveFeedback={handleFeedback} />
 
         </Section>
 
@@ -56,12 +47,18 @@ export class App extends Component {
               good={good}
               neutral={neutral}
               bad={bad}
-              total={totalFeedback}
-              positivePercentage={positivePercentage}
+              total={calculateTotalFeedback()}
+              positivePercentage={calculatePositivePercentage()}
             />
           )}
         </Section>
       </div>
     );
   }
-}
+
+App.propTypes = {
+  good: PropTypes.number,
+  neutral: PropTypes.number,
+  bad: PropTypes.number,
+  handleFeedback: PropTypes.func,
+};
